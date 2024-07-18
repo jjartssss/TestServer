@@ -1,34 +1,48 @@
 const express = require('express');
 const app = express();
-
 const http = require('http');
-const {Server} = require('socket.io');
-const PORT = process.env.PORT || 3001;
-const cors = require('cors'); // prevent connection errors
-app.use(cors())
-const server = http.createServer(app) // create http?
+const { Server } = require('socket.io');
+const cors = require('cors');
 
+const PORT = process.env.PORT || 3001;
+
+// Use CORS middleware
+app.use(cors());
+
+// Create HTTP server
+const server = http.createServer(app);
+
+// Setup Socket.io server with CORS
 const io = new Server(server, {
-    cors: { // specify the methods or functions 
-        origin: "https://chat-sun3.onrender.com/",
+    cors: {
+        origin: "https://chat-sun3.onrender.com",
         methods: ["GET", "POST"],
     }
-}); 
+});
 
+// Handle socket connection
 io.on("connection", (socket) => {
     console.log(`User Connected: ${socket.id}`);
 
-
+    // Join room event
     socket.on("join_room", (data) => {
         socket.join(data);
+        console.log(`User ${socket.id} joined room ${data}`);
     });
 
+    // Send message event
     socket.on("send_message", (data) => {
-        //console.log(data);
-        socket.to(data.room).emit("receive_message", data); // broadcast is send to other but not self
-    })
-})
+        socket.to(data.room).emit("receive_message", data);
+        console.log(`Message sent to room ${data.room}: ${data.message}`);
+    });
 
+    // Handle disconnect event
+    socket.on("disconnect", () => {
+        console.log(`User Disconnected: ${socket.id}`);
+    });
+});
+
+// Start the server
 server.listen(PORT, () => {
-    console.log("SERVER IS RUNNING");
-})
+    console.log(`SERVER IS RUNNING ON PORT ${PORT}`);
+});
