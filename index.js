@@ -10,7 +10,7 @@ const server = http.createServer(app) // create http?
 
 const io = new Server(server, {
     cors: { // specify the methods or functions 
-        origin: "http://localhost:3000",
+        origin: "https://chat-sun3.onrender.com/",
         methods: ["GET", "POST"],
     }
 }); 
